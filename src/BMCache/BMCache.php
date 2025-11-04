@@ -20,6 +20,7 @@ class BMCache {
   const PERMANENT = "bluemarloc_cache";
 
   const TEMPORARY = 'cache_bluemarloc';// managed by BMCache
+
   // temporary or permanent indicating bluemarloc_cache or cache_bluemarloc table.
   private mixed $namespace;
 
@@ -50,6 +51,7 @@ class BMCache {
       Drupal::logger('bm_main')->alert('Table bluemarloc_cache added to database');
       // signal table i
     }
+    // signal the cache is available
     Drupal::State()->set('bm_main.BMCache', TRUE);
   }
 

@@ -1,0 +1,25 @@
+<?php
+/*
+ Copyright (c) Mondial-IT BV - Blue Marloc 2024
+   Created on 2024-11-21 at 11:23:21
+ */ /** @noinspection PhpUnused */
+
+/** @noinspection PhpUnusedParameterInspection */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+
+function bm_cache_page_attachments(array &$page): void {
+  $page['#attached']['library'][] = 'bm_cache/bm_cache';
+}
+
+function bm_cache_help($route_name, RouteMatchInterface $route_match): string|TranslatableMarkup {
+  return match ($route_name) {
+    'help.page.bm_cache' => t('
+                <h2>Help for bm_cache.</h2>
+                <h3>see settings form of bm_cache</h3>'),
+    default => '',
+  };
+
+}
