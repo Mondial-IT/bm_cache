@@ -1,0 +1,11 @@
+bm_cache:
+  version: 1.x
+  css:
+    theme:
+      css/bm_cache.css: {}
+  js:
+    js/bm_cache.js: {}
+  dependencies:
+  - core/jquery
+  - core/jquery.ui.widget
+  - bm_main/bm_main

@@ -1,0 +1,8 @@
+name: Blue Marloc Cache Module
+description: Offers management of temporary and permanent caches.
+package: bluemarloc
+type: module
+version: 1.0
+core_version_requirement: ^10 || ^11
+dependencies:
+  - bm_main:bm_main
