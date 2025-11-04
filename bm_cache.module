@@ -2,24 +2,40 @@
 /*
  Copyright (c) Mondial-IT BV - Blue Marloc 2024
    Created on 2024-11-21 at 11:23:21
- */ /** @noinspection PhpUnused */
+*/ /** @noinspection PhpUnused */
 
 /** @noinspection PhpUnusedParameterInspection */
 
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\StringTranslation\TranslatableMarkup;
 
-
-function bm_cache_page_attachments(array &$page): void {
-  $page['#attached']['library'][] = 'bm_cache/bm_cache';
+/**
+ * Attach the module library to pages where appropriate.
+ *
+ * Use the standard hook_page_attachments signature. Keep the parameter name
+ * generic ($attachments) to match common examples and avoid confusion.
+ */
+function bm_cache_page_attachments(array &$attachments): void {
+  // Ensure library exists in bm_cache.libraries.yml.
+  $attachments['#attached']['library'][] = 'bm_cache/bm_cache';
 }
 
+/**
+ * Provide help for the module. Drupal calls the route 'help.page.<module>'.
+ *
+ * Returning TranslatableMarkup or a plain string is compatible with Drupal 11.
+ * Keep help content concise here — full multi-topic documentation lives in
+ * help_topics/*.md files (Drupal will render those under the module help page).
+ */
 function bm_cache_help($route_name, RouteMatchInterface $route_match): string|TranslatableMarkup {
-  return match ($route_name) {
-    'help.page.bm_cache' => t('
-                <h2>Help for bm_cache.</h2>
-                <h3>see settings form of bm_cache</h3>'),
-    default => '',
-  };
-
+  switch ($route_name) {
+    case 'help.page.bm_cache':
+      // A brief installation/help summary shown on the module help page. Full
+      // documentation is provided in the help_topics/*.md files shipped with
+      // the module.
+      $html = '\n        <h2>' . t('bm_cache') . '</h2>\n        <p>' . t('bm_cache integrates caching helpers for Blue Marloc projects. Full user documentation is shipped in the module help topics (see Configuration → Help or the module help page).') . '</p>\n        <h3>' . t('Quick installation') . '</h3>\n        <ol>\n          <li>' . t('Install via composer or place the module in modules/contrib/bm_cache and enable it in Extend.') . '</li>\n          <li>' . t('Ensure the library defined in bm_cache.libraries.yml is present and correct.') . '</li>\n          <li>' . t('Visit the module configuration page under Configuration to review and adjust settings.') . '</li>\n        </ol>\n        <p>' . t('For step-by-step instructions, configuration examples and troubleshooting information, see the full help topics provided with this module.') . '</p>\n      ';
+      return t($html);
+    default:
+      return '';
+  }
 }
