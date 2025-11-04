@@ -1,0 +1,26 @@
+<?php
+
+/*
+ Copyright (c) Mondial-IT BV - Blue Marloc 2024
+   Created on 2024-11-21 at 11:23:21
+ */
+
+/**
+ * Implements hook_update_N().
+ * Create the bluemarloc_cache table when it is not present
+ */
+function bm_cache_update_9001() {
+  // Check if the table exists and create it if it doesn't.
+  $database = \Drupal::database();
+  $table_name = 'bluemarloc_cache';
+  \Drupal::logger('bm_cache')->debug('Exists bluemarloc_cache?: [' . $database->schema()->tableExists($table_name) . ']');
+
+  // Check if the table exists.
+  if (!$database->schema()->tableExists($table_name)) {
+    \Drupal::messenger()->addStatus('Table bluemarloc_cache created');
+    $sql = 'CREATE TABLE bluemarloc_cache LIKE cache_bluemarloc;';
+    $database->query($sql);
+    \Drupal::logger('bm_main')->info('Table bluemarloc_cache added to database');
+  }
+
+}

@@ -1,0 +1,20 @@
+bm_cache.top_menu:
+  title: 'BlueMarloc Cache'
+  description: 'Caching module'
+  parent:  bm_main.bluemarloc_admin
+  route_name: bm_cache.settings_form
+  weight: 3
+
+#bm_cache.settings_form:
+#  title: 'Settings'
+#  description: 'Cache settings'
+#  parent: bm_cache.top_menu
+#  route_name: bm_cache.settings_form
+#  weight: 3
+
+bm_cache.cache_form:
+  title: 'Selective flush'
+  description: 'Selective Flush'
+  parent: bm_cache.top_menu
+  route_name: bm_cache.cache_form
+  weight: 4

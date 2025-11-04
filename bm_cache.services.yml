@@ -1,0 +1,8 @@
+# cache bin
+services:
+  cache.bluemarloc:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: ['@cache_factory', 'get']
+    arguments: [bluemarloc]

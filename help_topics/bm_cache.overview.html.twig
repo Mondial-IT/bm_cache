@@ -1,0 +1,259 @@
+---
+label: 'Blue Marloc Cache'
+top_level: true
+related:
+- bm_cache.overview
+---
+
+<h2>Managed permanent cache for BlueMarloc modules.</h2>
+
+<p>This module provides a caching mechanism to other modules, where the cached content can be managed from this <a
+    href="/admin/flush/bluemarloc_cache_form">admin settings screen</a>.
+</p>
+
+<p>It's purpose to provide a <b>permanent storage</b> for items such as <i>google places information</i> and <i>maps</i>,
+  which should not be removed on a <i>general cache clear all</i>.
+</p>
+
+<h2>User interface</h2>
+<ul>
+  <li><a href="/admin/bm_cache/settings_form">General Settings</a></li>
+  <li><a href="/admin/flush/bluemarloc_cache_form">Selective Flush</a></li>
+</ul>
+
+<h2>Database tables</h2>
+<ul>
+  <li><code>cache_bluemarloc</code>: which is a 'standard' drupal cache table.</li>
+  <li><code>bluemarloc_cache</code>: which is a table managed by <code>bm_cache</code> module.</li>
+</ul>
+
+<h3>Drupal managed cache</h3>
+<p>
+  <i>using table <code>cache_bluemarloc</code></i><br />
+  <b>Temporary cache which is Drupal controlled</b><br/>
+  These use the regular Drupal cache method.
+  <br/><code>Cache clear all</code> clears this cache
+</p>
+
+<b>Aliases</b>
+
+<ul>
+  <li><code>Drupal::cache('bluemarloc')</code></li>
+  <li><code>BMCache::cache('bluemarloc')</code></li>
+  <li><code>BMCache::cache('temporary')</code></li>
+  <li><code>BMCache::cache()</code></li>
+</ul>
+
+<h3>Blue Marloc managed cache</h3>
+
+<p><b>Permanent cache which is not controlled by Drupal clear cache.</b><br/>
+  This is the permanent cache in table <i><code>bluemarloc_cache</code></i>
+</p>
+
+<ul>
+  <li><code>BMCache::cache('permanent')</code></li>
+</ul>
+
+<h2>API</h2>
+<h4>Cache</h4>
+<code>BMCache::cache($namespace)</code>
+<h4>Getter</h4>
+<code> $cache=Drupal::cache('bluemarloc')->get($cid,true);:false|object</code>
+<code> $cache=BMCache::get($cid,true);:false|object</code>
+
+
+<h4>Setter</h4>
+<code>BMCache::set(string $cid, mixed $date, int $expire=0):void </code>
+<h4>Delete</h4>
+<code>BMCache::delete($cid)</code>
+<h4>List</h4>
+<code>BMCache::list():array</code>
+<h4>Match</h4>
+<code>BMCache::match(string $matchString)</code>
+
+<hr>
+
+
+<main>
+  <header>
+    <h1>BMCache</h1>
+    <p class="muted">A minimal cache abstraction for Blue Marloc, offering a <span class="chip">temporary</span> bin-backed cache and a <span class="chip">permanent</span> database-backed cache. Tested with Drupal 11.2.5 and PHP 8.3.</p>
+  </header>
+
+  <section id="overview">
+    <h2>Overview</h2>
+    <p><code>Drupal\bm_cache\BMCache\BMCache</code> provides a unified API over two storage modes:</p>
+    <ul>
+      <li><strong>Temporary</strong> &mdash; uses Drupal cache bin <code>bluemarloc</code> (<code>cache_bluemarloc</code> table). Eviction/expiry is handled by Drupal.</li>
+      <li><strong>Permanent</strong> &mdash; uses custom table <code>bluemarloc_cache</code>. Values are serialized and stored with a perpetual expiry (<code>expire = -1</code>).</li>
+    </ul>
+    <div class="callout">
+      <strong>Auto-install:</strong> On first use, the class verifies the <code>bluemarloc_cache</code> table and creates it (schema cloned from <code>cache_bluemarloc</code>) when missing. A state flag <code>bm_main.BMCache</code> signals readiness.
+    </div>
+  </section>
+
+  <section id="namespace-selection">
+    <h2>Choosing the storage (factory)</h2>
+    <p>Create instances via the static factory <code>BMCache::cache()</code>:</p>
+    <ul>
+      <li><code>BMCache::cache()</code>, <code>BMCache::cache('temporary')</code>, or <code>BMCache::cache('bluemarloc')</code> &rarr; <em>Temporary</em></li>
+      <li><code>BMCache::cache('permanent')</code> or any other non-null string not equal to the above &rarr; <em>Permanent</em></li>
+    </ul>
+    <p class="muted">Direct construction is intentionally private.</p>
+  </section>
+
+  <section id="api">
+    <h2>Public API</h2>
+
+    <table>
+      <thead>
+      <tr>
+        <th>Member</th>
+        <th>Signature</th>
+        <th>Description</th>
+        <th>Returns</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr>
+        <td>Constants</td>
+        <td><code>PERMANENT = "bluemarloc_cache"</code><br><code>TEMPORARY = "cache_bluemarloc"</code></td>
+        <td>Canonical table/bin names used internally.</td>
+        <td>&mdash;</td>
+      </tr>
+      <tr>
+        <td>Factory</td>
+        <td><code>public static function cache($namespace = null): BMCache</code></td>
+        <td>Creates a cache instance bound to temporary or permanent storage.</td>
+        <td><code>BMCache</code></td>
+      </tr>
+      <tr>
+        <td><code>get</code></td>
+        <td><code>public function get(string $cid): false|object</code></td>
+        <td>
+          Fetches a cache item by <code>$cid</code>.<br>
+          <em>Temporary:</em> returns Drupal cache item object (e.g., <code>(object){ data, created, expire, valid }</code>).<br>
+          <em>Permanent:</em> returns DB row object with <code>data</code> (unserialized) and <code>valid = true</code> if found.
+        </td>
+        <td><code>false</code> when not found; otherwise an object as above</td>
+      </tr>
+      <tr>
+        <td><code>set</code></td>
+        <td><code>public function set(string $cid, mixed $data, int $expire = 0): void</code></td>
+        <td>
+          Stores <code>$data</code> by <code>$cid</code>. <em>Temporary</em> respects <code>$expire</code> per Drupal; <em>Permanent</em> forces perpetual lifetime (<code>expire = -1</code>) and serializes <code>$data</code>.
+        </td>
+        <td><code>void</code></td>
+      </tr>
+      <tr>
+        <td><code>delete</code></td>
+        <td><code>public function delete(string $cid): static</code></td>
+        <td>Deletes an entry for <code>$cid</code> in the selected storage.</td>
+        <td><code>$this</code></td>
+      </tr>
+      <tr>
+        <td><code>list</code></td>
+        <td><code>public function list(): array</code></td>
+        <td>
+          Aggregates all entries for the selected storage into per-CID stats: <code>[ 'cid' =&gt; string, 'count' =&gt; int, 'size' =&gt; int ]</code>.
+          <br><span class="muted">Size is computed as byte length of stored <code>data</code> (serialized for permanent).</span>
+        </td>
+        <td><code>array</code></td>
+      </tr>
+      <tr>
+        <td><code>match</code></td>
+        <td><code>public function match(string $matchString): array</code></td>
+        <td>Returns up to 100 CIDs matching <code>%$matchString%</code> (SQL LIKE, escaped).</td>
+        <td><code>string[]</code></td>
+      </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="usage">
+    <h2>Usage Examples</h2>
+
+    <h3>1) Quick start (temporary bin)</h3>
+    <pre class="code"><code class="language-php">&lt;?php
+use Drupal\bm_cache\BMCache\BMCache;
+
+$cache = BMCache::cache('temporary'); // or BMCache::cache()
+$cid = 'bm:search:filters:v1';
+
+// write
+$cache-&gt;set($cid, ['q' =&gt; 'ocean', 'page' =&gt; 1], strtotime('+1 hour'));
+
+// read
+if ($item = $cache-&gt;get($cid)) {
+    $filters = $item-&gt;data; // Drupal cache item object
+    // use $filters...
+} else {
+    // compute and set...
+}
+</code></pre>
+
+    <h3>2) Durable storage (permanent table)</h3>
+    <pre class="code"><code class="language-php">&lt;?php
+use Drupal\bm_cache\BMCache\BMCache;
+
+$cache = BMCache::cache('permanent'); // uses bluemarloc_cache
+$cid = 'bm:reports:top-products:2025-11';
+
+// write (stored with expire = -1)
+$cache-&gt;set($cid, [
+    'generatedAt' =&gt; \Drupal::time()-&gt;getRequestTime(),
+    'items' =&gt; [['sku' =&gt; 'A-42', 'qty' =&gt; 120]],
+]);
+
+// read
+if ($row = $cache-&gt;get($cid)) {
+    $data = $row-&gt;data;         // unserialized array
+    $isValid = $row-&gt;valid;     // true
+}
+</code></pre>
+
+    <h3>3) Deleting an entry</h3>
+    <pre class="code"><code class="language-php">&lt;?php
+use Drupal\bm_cache\BMCache\BMCache;
+
+BMCache::cache('temporary')-&gt;delete('bm:search:filters:v1');
+BMCache::cache('permanent')-&gt;delete('bm:reports:top-products:2025-11');
+</code></pre>
+
+    <h3>4) Listing &amp; matching</h3>
+    <pre><code class="language-php">&lt;?php
+use Drupal\bm_cache\BMCache\BMCache;
+
+// Per-CID stats (count, size)
+$stats = BMCache::cache('permanent')-&gt;list(); // [cid =&gt; ['cid'=&gt;..., 'count'=&gt;N, 'size'=&gt;bytes], ...]
+
+// Find up to 100 CIDs containing a fragment
+$matches = BMCache::cache('temporary')-&gt;match('bm:search:');
+      </code></pre>
+  </section>
+
+  <section id="behaviour-notes">
+    <h2>Behavior &amp; Notes</h2>
+    <ul>
+      <li><strong>Permanent mode</strong> serializes PHP values; they are automatically unserialized on <code>get()</code>.</li>
+      <li><strong>Expiry</strong>: the <code>$expire</code> parameter is honored only in <em>temporary</em> mode. Permanent entries are stored with <code>expire = -1</code>.</li>
+      <li><strong>Return shape</strong>: be aware that <code>get()</code> returns slightly different objects for temporary vs permanent storage. Always read <code>-&gt;data</code>.</li>
+      <li><strong>Auto-creation</strong>: if <code>bluemarloc_cache</code> is missing, it is cloned from <code>cache_bluemarloc</code> on demand. A status message and a log entry are produced.</li>
+      <li><strong>Listing</strong>: <code>list()</code> computes approximate payload sizes using the stored <code>data</code> string length.</li>
+    </ul>
+  </section>
+
+  <section id="troubleshooting">
+    <h2>Troubleshooting</h2>
+    <ul>
+      <li>If you see DB errors mentioning <code>bluemarloc_cache</code> missing, the next call should auto-create it; verify state key <code>bm_main.BMCache</code> and DB permissions.</li>
+      <li>When migrating environments, ensure the <code>cache_bluemarloc</code> schema exists (used as the clone source).</li>
+      <li>Avoid storing resources/closures; store arrays/scalars/DTOs to keep serialization safe.</li>
+    </ul>
+  </section>
+
+  <hr />
+  <footer>
+    <p class="muted">Blue Marloc · BMCache · Drupal 11.2.5 · PHP 8.3</p>
+  </footer>
+</main>
