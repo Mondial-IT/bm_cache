@@ -1,0 +1,29 @@
+<?php
+
+use Drupal\Core\Database\Database;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
+
+/**
+ * Ensure the permanent cache table exists.
+ */
+function bm_cache_update_9001(): TranslatableMarkup {
+  $database = Database::getConnection();
+  $schema = $database->schema();
+  $target = 'bluemarloc_cache';
+
+  if ($schema->tableExists($target)) {
+    return t('Table @table already existed – no changes made.', ['@table' => $target]);
+  }
+
+  $source = 'cache_bluemarloc';
+  if (!$schema->tableExists($source)) {
+    throw new \RuntimeException(sprintf('Source cache table "%s" not found, cannot create %s.', $source, $target));
+  }
+
+  $database->query("CREATE TABLE $target LIKE $source");
+
+  \Drupal::state()->set('bm_main.BMCache', TRUE);
+  \Drupal::logger('bm_cache')->notice('Created @table table during update.', ['@table' => $target]);
+
+  return t('Created @table table.', ['@table' => $target]);
+}

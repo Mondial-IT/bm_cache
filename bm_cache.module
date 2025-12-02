@@ -7,7 +7,6 @@
 /** @noinspection PhpUnusedParameterInspection */
 
 use Drupal\Core\Routing\RouteMatchInterface;
-use Drupal\Core\StringTranslation\TranslatableMarkup;
 
 /**
  * Attach the module library to pages where appropriate.
@@ -27,24 +26,28 @@ function bm_cache_page_attachments(array &$attachments): void {
  * Keep help content concise here — full multi-topic documentation lives in
  * help_topics/*.md files (Drupal will render those under the module help page).
  */
-function bm_cache_help($route_name, RouteMatchInterface $route_match): string|TranslatableMarkup {
-  switch ($route_name) {
-    case 'help.page.bm_cache':
-      // A brief installation/help summary shown on the module help page. Full
-      // documentation is provided in the help_topics/*.md files shipped with
-      // the module.
-      $html = '
-        <h2>' . t('bm_cache') . '</h2>
-        <p>' . t('bm_cache integrates caching helpers for Blue Marloc projects. Full user documentation is shipped in the module help topics (see Configuration → Help or the module help page).') . '</p>
-        <h3>' . t('Quick installation') . '</h3>
-        <ol>
-          <li>' . t('Install via composer or place the module in modules/contrib/bm_cache and enable it in Extend.') . '</li>
-          <li>' . t('Visit the module configuration page under Configuration to review and adjust settings.') . '</li>
-        </ol>
-        <p>' . t('For step-by-step instructions, configuration examples and troubleshooting information, see the full help topics provided with this module.') . '</p>
-      ';
-      return t($html);
-    default:
-      return '';
+function bm_cache_help($route_name, RouteMatchInterface $route_match): string {
+  if ($route_name === 'help.page.bm_cache') {
+    $output = '<h2>' . t('Mondial-IT Cache Module') . '</h2>';
+    $output .= '<p>' . t('Offers management of temporary and permanent caches, including selective flushing tools for Blue Marloc environments.') . '</p>';
+
+    $output .= '<h3>' . t('Menus') . '</h3><ul>';
+    $output .= '<li>' . t('<strong>BlueMarloc Cache</strong> — listed under Blue Marloc » Administration and opens the cache settings form.') . '</li>';
+    $output .= '<li>' . t('<strong>Selective flush</strong> — child link that jumps directly to the selective cache flush form.') . '</li>';
+    $output .= '</ul>';
+
+    $output .= '<h3>' . t('URIs') . '</h3><ul>';
+    $output .= '<li>' . t('<code>@path</code> (<code>@route</code>) — review module configuration.', [
+      '@path' => '/admin/bm_cache/settings_form',
+      '@route' => 'bm_cache.settings_form',
+    ]) . '</li>';
+    $output .= '<li>' . t('<code>@path</code> (<code>@route</code>) — selectively clear caches that the module exposes.', [
+      '@path' => '/admin/flush/bluemarloc_cache_form',
+      '@route' => 'bm_cache.cache_form',
+    ]) . '</li>';
+    $output .= '</ul>';
+
+    return $output;
   }
+  return '';
 }
