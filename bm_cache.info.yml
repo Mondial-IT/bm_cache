@@ -1,4 +1,4 @@
-name: Mondial-IT Cache
+name: MIT Cache
 description: Offers management of temporary and permanent (not 'cache clear all' cleared) caches.
 package: Mondial-IT
 type: module
